@@ -114,7 +114,7 @@ export class OCREngine {
   /**
    * Shut down the OCR engine and free up resources.
    */
-  destroy() {
+  [Symbol.dispose]() {
     this._engine.delete();
     this._engine = null;
   }
