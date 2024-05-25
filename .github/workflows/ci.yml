@@ -11,15 +11,27 @@ jobs:
         node-version-file: '.node-version'
         cache: 'npm'
         cache-dependency-path: 'package-lock.json'
+    - uses: mymindstorm/setup-emsdk@6ab9eb1bda2574c4ddb79809fc9247783eaf9021 # v14
+      with:
+        version: 3.1.61
+        actions-cache-folder: 'emsdk-cache'
+    - name: Poop out node info
+      run: which node && node --version && npm --version
     - name: Install apt deps
       run: sudo apt-get install clang-format ninja-build
     - name: Install npm deps
       run: npm ci
+    - name: pre-lib node info
+      run: which node && node --version && npm --version
     - name: Build library
       run: make lib
+    - name: post-lib node info
+      run: which node && node --version && npm --version
     - name: Typecheck
       run: make typecheck
     - name: Check formatting
       run: make checkformat
+    - name: Mode node info
+      run: which node && node --version && npm --version
     - name: Run tests
       run: make test

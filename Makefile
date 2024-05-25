@@ -1,6 +1,5 @@
 include third_party_versions.mk
 
-EMSDK_DIR=$(PWD)/third_party/emsdk/upstream/emscripten
 INSTALL_DIR=$(PWD)/install
 FALLBACK_INSTALL_DIR=$(INSTALL_DIR)/fallback
 
@@ -40,23 +39,21 @@ typecheck:
 
 .PHONY: test
 test: third_party/tessdata_fast
+	SHELL=/bin/bash
+	echo "Current Shell: $$SHELL"
+	echo "PATH: $$PATH"
+	echo "Checking user permissions:"
+	id
+	which node
+	type node
+	alias
+	node --version
 	node --test test/ocr-engine-test.js
 
 .PHONY: release
 release: clean lib typecheck test
 	@which np || (echo "Install np from https://github.com/sindresorhus/np" && false)
 	np minor
-
-third_party/emsdk: third_party_versions.mk
-	mkdir -p third_party/emsdk
-	test -d $@/.git || git clone --depth 1 https://github.com/emscripten-core/emsdk.git $@
-	cd $@ && git fetch origin $(EMSDK_COMMIT) && git checkout $(EMSDK_COMMIT)
-	touch $@
-
-build/emsdk.uptodate: third_party/emsdk | build
-	third_party/emsdk/emsdk install latest
-	third_party/emsdk/emsdk activate latest
-	touch build/emsdk.uptodate
 
 # Compile flags for Leptonica. These turn off support for various image formats to
 # reduce size. We don't need this since the browser includes this functionality.
@@ -71,11 +68,11 @@ third_party/leptonica: third_party_versions.mk
 	cd $@ && git fetch origin $(LEPTONICA_COMMIT) && git checkout $(LEPTONICA_COMMIT)
 	touch $@
 
-build/leptonica.uptodate: third_party/leptonica build/emsdk.uptodate
+build/leptonica.uptodate: third_party/leptonica
 	mkdir -p build/leptonica
-	cd build/leptonica && $(EMSDK_DIR)/emcmake cmake -G Ninja ../../third_party/leptonica $(LEPTONICA_FLAGS)
-	cd build/leptonica && $(EMSDK_DIR)/emmake ninja
-	cd build/leptonica && $(EMSDK_DIR)/emmake ninja install
+	cd build/leptonica && emcmake cmake -G Ninja ../../third_party/leptonica $(LEPTONICA_FLAGS)
+	cd build/leptonica && emmake ninja
+	cd build/leptonica && emmake ninja install
 	touch build/leptonica.uptodate
 
 # Additional preprocessor defines for Tesseract.
@@ -126,16 +123,16 @@ third_party/tessdata_fast:
 
 build/tesseract.uptodate: build/leptonica.uptodate third_party/tesseract
 	mkdir -p build/tesseract
-	(cd build/tesseract && $(EMSDK_DIR)/emcmake cmake -G Ninja ../../third_party/tesseract $(TESSERACT_FLAGS))
-	(cd build/tesseract && $(EMSDK_DIR)/emmake ninja)
-	(cd build/tesseract && $(EMSDK_DIR)/emmake ninja install)
+	(cd build/tesseract && emcmake cmake -G Ninja ../../third_party/tesseract $(TESSERACT_FLAGS))
+	(cd build/tesseract && emmake ninja)
+	(cd build/tesseract && emmake ninja install)
 	touch build/tesseract.uptodate
 
 build/tesseract-fallback.uptodate: build/leptonica.uptodate third_party/tesseract
 	mkdir -p build/tesseract-fallback
-	(cd build/tesseract-fallback && $(EMSDK_DIR)/emcmake cmake -G Ninja ../../third_party/tesseract $(TESSERACT_FALLBACK_FLAGS))
-	(cd build/tesseract-fallback && $(EMSDK_DIR)/emmake ninja)
-	(cd build/tesseract-fallback && $(EMSDK_DIR)/emmake ninja install)
+	(cd build/tesseract-fallback && emcmake cmake -G Ninja ../../third_party/tesseract $(TESSERACT_FALLBACK_FLAGS))
+	(cd build/tesseract-fallback && emmake ninja)
+	(cd build/tesseract-fallback && emmake ninja install)
 	touch build/tesseract-fallback.uptodate
 
 # emcc flags. `-Os` minifies the JS wrapper and optimises WASM code size.
@@ -161,7 +158,7 @@ EMCC_FLAGS =\
 
 # Build main WASM binary for browsers that support WASM SIMD.
 build/tesseract-core.js build/tesseract-core.wasm: src/lib.cpp src/tesseract-init.js build/tesseract.uptodate
-	$(EMSDK_DIR)/emcc src/lib.cpp $(EMCC_FLAGS) \
+	emcc src/lib.cpp $(EMCC_FLAGS) \
 		-I$(INSTALL_DIR)/include/ -L$(INSTALL_DIR)/lib/ -ltesseract -lleptonica -lembind \
 		-o build/tesseract-core.js
 	cp src/tesseract-core.d.ts build/
@@ -169,7 +166,7 @@ build/tesseract-core.js build/tesseract-core.wasm: src/lib.cpp src/tesseract-ini
 # Build fallback WASM binary for browsers that don't support WASM SIMD. The JS
 # output from this build is not used.
 build/tesseract-core-fallback.js build/tesseract-core-fallback.wasm: src/lib.cpp src/tesseract-init.js build/tesseract-fallback.uptodate
-	$(EMSDK_DIR)/emcc src/lib.cpp $(EMCC_FLAGS) \
+	emcc src/lib.cpp $(EMCC_FLAGS) \
 		-I$(INSTALL_DIR)/include/ -L$(FALLBACK_INSTALL_DIR)/lib/ -L$(INSTALL_DIR)/lib -ltesseract -lleptonica -lembind \
 		-o build/tesseract-core-fallback.js
 
