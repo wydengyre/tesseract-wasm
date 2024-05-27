@@ -40,6 +40,13 @@ typecheck:
 
 .PHONY: test
 test: third_party/tessdata_fast
+	SHELL=/bin/bash
+	echo "Current Shell: $$SHELL"
+	echo "PATH: $$PATH"
+	echo "Checking user permissions:"
+	id
+	which node
+	node --version
 	node --test test/ocr-engine-test.js
 
 .PHONY: release
