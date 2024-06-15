@@ -35,7 +35,7 @@ checkformat:
 	node_modules/.bin/prettier --check {src,test}/**/*.js
 
 .PHONY: typecheck
-typecheck:
+typecheck: build/tesseract-core.d.ts
 	node_modules/.bin/tsc
 
 .PHONY: test
@@ -164,7 +164,6 @@ build/tesseract-core.js build/tesseract-core.wasm: src/lib.cpp src/tesseract-ini
 	$(EMSDK_DIR)/emcc src/lib.cpp $(EMCC_FLAGS) \
 		-I$(INSTALL_DIR)/include/ -L$(INSTALL_DIR)/lib/ -ltesseract -lleptonica -lembind \
 		-o build/tesseract-core.js
-	cp src/tesseract-core.d.ts build/
 
 # Build fallback WASM binary for browsers that don't support WASM SIMD. The JS
 # output from this build is not used.
@@ -172,6 +171,9 @@ build/tesseract-core-fallback.js build/tesseract-core-fallback.wasm: src/lib.cpp
 	$(EMSDK_DIR)/emcc src/lib.cpp $(EMCC_FLAGS) \
 		-I$(INSTALL_DIR)/include/ -L$(FALLBACK_INSTALL_DIR)/lib/ -L$(INSTALL_DIR)/lib -ltesseract -lleptonica -lembind \
 		-o build/tesseract-core-fallback.js
+
+build/tesseract-core.d.ts: src/tesseract-core.d.ts build
+	cp $< $@
 
 dist/tesseract-core.wasm: build/tesseract-core.wasm
 	mkdir -p dist/

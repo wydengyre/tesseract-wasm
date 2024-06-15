@@ -1,4 +1,3 @@
-// @ts-ignore - Don't error if library hasn't been built yet.
 import initTesseractCore from "../build/tesseract-core";
 
 import { imageDataFromBitmap } from "./utils";
