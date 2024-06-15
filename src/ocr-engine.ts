@@ -192,7 +192,7 @@ export class OCREngine {
     // Tesseract
     const engineImage = new this._tesseractLib.Image(
       imageData.width,
-      imageData.height
+      imageData.height,
     );
     const engineImageBuf = engineImage.data();
     engineImageBuf.set(new Uint32Array(imageData.data.buffer));
@@ -262,7 +262,7 @@ export class OCREngine {
       this._engine.getTextBoxes(textUnit, (progress: number) => {
         onProgress?.(progress);
         this._progressChannel?.postMessage({ progress });
-      })
+      }),
     );
   }
 
@@ -380,7 +380,7 @@ export type CreateOCREngineOptions = {
    * used to create the tesseract module. Possible options are documented here:
    * https://github.com/emscripten-core/emscripten/blob/1e7472362a7f5844c5bd23214d725b7a3fd18775/src/settings.js#L876
    */
-  emscriptenModuleOptions?: {wasmBinary: ArrayBuffer};
+  emscriptenModuleOptions?: { wasmBinary: ArrayBuffer };
 };
 
 /**
