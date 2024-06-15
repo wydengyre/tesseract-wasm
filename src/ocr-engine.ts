@@ -1,5 +1,4 @@
-// @ts-ignore - Don't error if library hasn't been built yet.
-import initTesseractCore from "../build/tesseract-core";
+import initTesseractCore, {MainModule, OCREngine as WASMOCREngine} from "../build/tesseract-core";
 
 import { imageDataFromBitmap } from "./utils";
 
@@ -89,8 +88,8 @@ export type ProgressListener = (progress: number) => void;
  * Instances are constructed using {@link createOCREngine}.
  */
 export class OCREngine {
-  private _tesseractLib: any;
-  private _engine: any;
+  private _tesseractLib: MainModule;
+  private _engine: WASMOCREngine;
   private _modelLoaded: boolean;
   private _imageLoaded: boolean;
   private _progressChannel?: MessagePort;
@@ -104,7 +103,7 @@ export class OCREngine {
    * @param progressChannel - Channel used to report progress
    *   updates when OCREngine is run on a background thread
    */
-  constructor(tessLib: any, progressChannel?: MessagePort) {
+  constructor(tessLib: MainModule, progressChannel?: MessagePort) {
     this._tesseractLib = tessLib;
     this._engine = new tessLib.OCREngine();
     this._modelLoaded = false;
@@ -116,8 +115,7 @@ export class OCREngine {
    * Shut down the OCR engine and free up resources.
    */
   destroy() {
-    this._engine.delete();
-    this._engine = null;
+    this._engine?.delete();
   }
 
   /**
@@ -130,7 +128,7 @@ export class OCREngine {
     if (!result.success) {
       throw new Error(`Unable to get variable ${name}`);
     }
-    return result.value;
+    return result.value.toString();
   }
 
   /**
@@ -192,7 +190,7 @@ export class OCREngine {
     // Tesseract
     const engineImage = new this._tesseractLib.Image(
       imageData.width,
-      imageData.height
+      imageData.height,
     );
     const engineImageBuf = engineImage.data();
     engineImageBuf.set(new Uint32Array(imageData.data.buffer));
@@ -262,7 +260,7 @@ export class OCREngine {
       this._engine.getTextBoxes(textUnit, (progress: number) => {
         onProgress?.(progress);
         this._progressChannel?.postMessage({ progress });
-      })
+      }),
     );
   }
 
@@ -380,7 +378,7 @@ export type CreateOCREngineOptions = {
    * used to create the tesseract module. Possible options are documented here:
    * https://github.com/emscripten-core/emscripten/blob/1e7472362a7f5844c5bd23214d725b7a3fd18775/src/settings.js#L876
    */
-  emscriptenModuleOptions?: {wasmBinary: ArrayBuffer};
+  emscriptenModuleOptions?: { wasmBinary: ArrayBuffer };
 };
 
 /**
