@@ -1,4 +1,4 @@
-import initTesseractCore from "../build/tesseract-core";
+import initTesseractCore, {MainModule, OCREngine as WASMOCREngine} from "../build/tesseract-core";
 
 import { imageDataFromBitmap } from "./utils";
 
@@ -88,8 +88,8 @@ export type ProgressListener = (progress: number) => void;
  * Instances are constructed using {@link createOCREngine}.
  */
 export class OCREngine {
-  private _tesseractLib: any;
-  private _engine: any;
+  private _tesseractLib: MainModule;
+  private _engine: WASMOCREngine;
   private _modelLoaded: boolean;
   private _imageLoaded: boolean;
   private _progressChannel?: MessagePort;
@@ -103,7 +103,7 @@ export class OCREngine {
    * @param progressChannel - Channel used to report progress
    *   updates when OCREngine is run on a background thread
    */
-  constructor(tessLib: any, progressChannel?: MessagePort) {
+  constructor(tessLib: MainModule, progressChannel?: MessagePort) {
     this._tesseractLib = tessLib;
     this._engine = new tessLib.OCREngine();
     this._modelLoaded = false;
@@ -115,8 +115,7 @@ export class OCREngine {
    * Shut down the OCR engine and free up resources.
    */
   destroy() {
-    this._engine.delete();
-    this._engine = null;
+    this._engine?.delete();
   }
 
   /**
@@ -129,7 +128,7 @@ export class OCREngine {
     if (!result.success) {
       throw new Error(`Unable to get variable ${name}`);
     }
-    return result.value;
+    return result.value.toString();
   }
 
   /**
