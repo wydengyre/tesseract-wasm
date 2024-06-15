@@ -1,0 +1,19 @@
+{
+	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+	"organizeImports": {
+		"enabled": true
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true
+		}
+	},
+	"files": {
+		"include": ["src/**/*.ts", "src/**/*.js", "test/**/*.js"],
+		"ignore": ["src/tesseract-core.d.ts"]
+	},
+	"formatter": {
+		"indentStyle": "space"
+	}
+}

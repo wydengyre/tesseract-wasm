@@ -27,8 +27,8 @@
   },
   "homepage": "https://github.com/wydengyre/tesseract-wasm#readme",
   "devDependencies": {
+    "@biomejs/biome": "1.8.1",
     "esbuild": "0.21.3",
-    "prettier": "3.2.5",
     "sharp": "0.33.4",
     "typescript": "5.4.5"
   },

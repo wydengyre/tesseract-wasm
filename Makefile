@@ -25,13 +25,12 @@ build:
 .PHONY: format
 format:
 	clang-format -i --style=google src/*.cpp
-	node_modules/.bin/prettier -w {src,test}/**/*.js
-	node_modules/.bin/prettier -w src/**/*.ts
+	node_modules/.bin/biome check --write src test
 
 .PHONY: checkformat
 checkformat:
 	clang-format -Werror --dry-run --style=google src/*.cpp
-	node_modules/.bin/prettier --check {src,test}/**/*.js
+	node_modules/.bin/biome ci src test
 
 .PHONY: typecheck
 typecheck: build/tesseract-core.d.ts
