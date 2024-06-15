@@ -1,5 +1,5 @@
-import { readFile } from "node:fs/promises";
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import { after, before, describe, it } from "node:test";
 
 import sharp from "sharp";
@@ -173,43 +173,39 @@ describe("OCREngine", () => {
     assert.strictEqual(dpi, varValue);
   });
 
-  it(
-    "extracts bounding boxes from image",
-    { timeout: 2_000 },
-    async function () {
-      const imageData = await loadImage(resolve("./small-test-page.jpg"));
-      ocr.loadImage(imageData);
+  it("extracts bounding boxes from image", { timeout: 2_000 }, async () => {
+    const imageData = await loadImage(resolve("./small-test-page.jpg"));
+    ocr.loadImage(imageData);
 
-      // nb. The number of boxes returned here is slightly different than the
-      // test below which reads text boxes. This is because `getBoundingBoxes`
-      // performs a faster/simpler analysis and `getTextBoxes` triggers the more
-      // expensive LSTM-based analysis.
-      const wordBoxes = ocr.getBoundingBoxes("word");
-      assert.strictEqual(wordBoxes.length, 153);
+    // nb. The number of boxes returned here is slightly different than the
+    // test below which reads text boxes. This is because `getBoundingBoxes`
+    // performs a faster/simpler analysis and `getTextBoxes` triggers the more
+    // expensive LSTM-based analysis.
+    const wordBoxes = ocr.getBoundingBoxes("word");
+    assert.strictEqual(wordBoxes.length, 153);
 
-      for (let box of wordBoxes) {
-        const { rect } = box;
+    for (const box of wordBoxes) {
+      const { rect } = box;
 
-        assert.strictEqual(typeof rect.left, "number");
-        assert.strictEqual(typeof rect.right, "number");
-        assert.strictEqual(typeof rect.top, "number");
-        assert.strictEqual(typeof rect.bottom, "number");
+      assert.strictEqual(typeof rect.left, "number");
+      assert.strictEqual(typeof rect.right, "number");
+      assert.strictEqual(typeof rect.top, "number");
+      assert.strictEqual(typeof rect.bottom, "number");
 
-        assert.strict(rect.left >= 0 && rect.left <= imageData.width);
-        assert.strict(rect.right >= 0 && rect.right <= imageData.width);
-        assert.strict(rect.right > rect.left);
+      assert.strict(rect.left >= 0 && rect.left <= imageData.width);
+      assert.strict(rect.right >= 0 && rect.right <= imageData.width);
+      assert.strict(rect.right > rect.left);
 
-        assert.strict(rect.top >= 0 && rect.top <= imageData.height);
-        assert.strict(rect.bottom >= 0 && rect.bottom <= imageData.height);
-        assert.strict(rect.bottom > rect.top);
-      }
+      assert.strict(rect.top >= 0 && rect.top <= imageData.height);
+      assert.strict(rect.bottom >= 0 && rect.bottom <= imageData.height);
+      assert.strict(rect.bottom > rect.top);
+    }
 
-      const lineBoxes = ocr.getBoundingBoxes("line");
-      assert.strictEqual(lineBoxes.length, 10);
-    },
-  );
+    const lineBoxes = ocr.getBoundingBoxes("line");
+    assert.strictEqual(lineBoxes.length, 10);
+  });
 
-  it("can extract bounding boxes without a model loaded", async function () {
+  it("can extract bounding boxes without a model loaded", async () => {
     const ocr = await createEngine({ loadModel: false });
 
     const imageData = await loadImage(resolve("./small-test-page.jpg"));
@@ -219,7 +215,7 @@ describe("OCREngine", () => {
     assert.strictEqual(wordBoxes.length, 153);
   });
 
-  it("extracts text boxes from image", { timeout: 10_000 }, async function () {
+  it("extracts text boxes from image", { timeout: 10_000 }, async () => {
     const imageData = await loadImage(resolve("./small-test-page.jpg"));
     ocr.loadImage(imageData);
 
@@ -227,10 +223,10 @@ describe("OCREngine", () => {
     assert.strictEqual(wordBoxes.length, 159);
     assert.strictEqual(wordBoxes.at(0).text, "Image");
     assert.strictEqual(wordBoxes.at(-1).text, "complexity.");
-    let meanLength = mean(wordBoxes.map((b) => b.text.length));
+    const meanLength = mean(wordBoxes.map((b) => b.text.length));
     assert.strict(meanLength >= 4);
     assert.strict(meanLength <= 8);
-    let meanConfidence = mean(wordBoxes.map((b) => b.confidence));
+    const meanConfidence = mean(wordBoxes.map((b) => b.confidence));
     assert.strict(meanConfidence >= 0.9);
 
     const lineBoxes = ocr.getTextBoxes("line");
@@ -270,7 +266,7 @@ describe("OCREngine", () => {
     });
   });
 
-  it("extracts layout flags from image", { timeout: 5_000 }, async function () {
+  it("extracts layout flags from image", { timeout: 5_000 }, async () => {
     const imageData = await loadImage(resolve("./small-test-page.jpg"));
     ocr.loadImage(imageData);
 
@@ -308,7 +304,7 @@ describe("OCREngine", () => {
     ]);
   });
 
-  it("extracts text from image", { timeout: 5_000 }, async function () {
+  it("extracts text from image", { timeout: 5_000 }, async () => {
     const imageData = await loadImage(resolve("./small-test-page.jpg"));
     ocr.loadImage(imageData);
 
@@ -319,34 +315,30 @@ describe("OCREngine", () => {
       "This thresholding is a critical step",
     ];
 
-    for (let phrase of expectedPhrases) {
+    for (const phrase of expectedPhrases) {
       assert.strict(text.includes(phrase));
     }
   });
 
-  it(
-    "accepts emscripten module options",
-    { timeout: 5_000 },
-    async function () {
-      let stderr = "";
-      const writeToStderr = (s) => {
-        stderr += s;
-      };
+  it("accepts emscripten module options", { timeout: 5_000 }, async () => {
+    let stderr = "";
+    const writeToStderr = (s) => {
+      stderr += s;
+    };
 
-      const ocr = await createEngine({
-        emscriptenModuleOptions: { printErr: writeToStderr },
-      });
+    const ocr = await createEngine({
+      emscriptenModuleOptions: { printErr: writeToStderr },
+    });
 
-      const imageData = await loadImage(resolve("./small-test-page.jpg"));
-      ocr.loadImage(imageData);
+    const imageData = await loadImage(resolve("./small-test-page.jpg"));
+    ocr.loadImage(imageData);
 
-      ocr.getText();
+    ocr.getText();
 
-      assert.strictEqual(stderr, "Estimating resolution as 171");
-    },
-  );
+    assert.strictEqual(stderr, "Estimating resolution as 171");
+  });
 
-  it("extracts hOCR from image", { timeout: 5_000 }, async function () {
+  it("extracts hOCR from image", { timeout: 5_000 }, async () => {
     const imageData = await loadImage(resolve("./small-test-page.jpg"));
     ocr.loadImage(imageData);
 
@@ -359,12 +351,12 @@ describe("OCREngine", () => {
       `<span class='ocr_line' id='line_1_5' title="bbox 36 443 1026 462; baseline 0 -5; x_size 18; x_descenders 4; x_ascenders 3">`,
     ];
 
-    for (let phrase of expectedPhrases) {
+    for (const phrase of expectedPhrases) {
       assert.strict(html.includes(phrase));
     }
   });
 
-  it("reports recognition progress", { timeout: 5_000 }, async function () {
+  it("reports recognition progress", { timeout: 5_000 }, async () => {
     const imageData = await loadImage(resolve("./small-test-page.jpg"));
     ocr.loadImage(imageData);
 
@@ -374,7 +366,7 @@ describe("OCREngine", () => {
     });
 
     assert.strict(progressSteps.length > 0);
-    for (let [i, progress] in progressSteps.entries()) {
+    for (const [i, progress] in progressSteps.entries()) {
       assert.strict(progress >= 0);
       assert.strict(progress <= 100);
       if (i > 0) {
@@ -396,7 +388,7 @@ describe("OCREngine", () => {
   it("can determine image orientation", async () => {
     const imagePath = resolve("./small-test-page.jpg");
 
-    for (let rotation of [0, 90, 180, 270]) {
+    for (const rotation of [0, 90, 180, 270]) {
       const image = await sharp(imagePath).ensureAlpha().rotate(rotation);
 
       ocr.loadImage(await toImageData(image));
