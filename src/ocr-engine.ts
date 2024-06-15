@@ -1,6 +1,7 @@
-import initTesseractCore, {
-  type MainModule,
-  type OCREngine as WASMOCREngine,
+import initTesseractCore from "../build/tesseract-core";
+import type {
+  MainModule,
+  OCREngine as WASMOCREngine,
 } from "../build/tesseract-core";
 
 import { imageDataFromBitmap } from "./utils";
