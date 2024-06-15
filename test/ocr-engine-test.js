@@ -53,16 +53,8 @@ describe("supportsFastBuild", () => {
   });
 });
 
-describe("OCREngine", () => {
-  let ocr;
-
-  before(async () => {
-    ocr = await createEngine();
-  });
-
-  after(() => {
-    ocr.destroy();
-  });
+describe("OCREngine", async () => {
+  using ocr = await createEngine();
 
   [
     // Image size does not match buffer size
@@ -93,7 +85,7 @@ describe("OCREngine", () => {
   });
 
   it("throws an error if OCR is attempted before image is loaded", async () => {
-    const ocr = await createEngine();
+    using ocr = await createEngine();
 
     assert.throws(
       () => {
@@ -121,7 +113,7 @@ describe("OCREngine", () => {
   });
 
   it("throws an error if OCR is attempted before model is loaded", async () => {
-    const ocr = await createEngine({ loadModel: false });
+    using ocr = await createEngine({ loadModel: false });
     const imageData = await loadImage(resolve("./small-test-page.jpg"));
     ocr.loadImage(imageData);
 
@@ -143,7 +135,7 @@ describe("OCREngine", () => {
   });
 
   it("throws an error if you attempt get the value of a nonsense variable", async () => {
-    const ocr = await createEngine({ loadModel: false });
+    using ocr = await createEngine({ loadModel: false });
     assert.throws(
       () => {
         ocr.getVariable("nonsense");
@@ -154,7 +146,7 @@ describe("OCREngine", () => {
   });
 
   it("throws an error if you attempt set the value of a nonsense variable", async () => {
-    const ocr = await createEngine({ loadModel: false });
+    using ocr = await createEngine({ loadModel: false });
     assert.throws(
       () => {
         ocr.setVariable("nonsense", "nonsense");
@@ -165,7 +157,7 @@ describe("OCREngine", () => {
   });
 
   it("successfully sets configuration variables", async () => {
-    const ocr = await createEngine({ loadModel: false });
+    using ocr = await createEngine({ loadModel: false });
     const varName = "user_defined_dpi";
     const varValue = "300";
     ocr.setVariable(varName, varValue);
@@ -210,7 +202,7 @@ describe("OCREngine", () => {
   );
 
   it("can extract bounding boxes without a model loaded", async function () {
-    const ocr = await createEngine({ loadModel: false });
+    using ocr = await createEngine({ loadModel: false });
 
     const imageData = await loadImage(resolve("./small-test-page.jpg"));
     ocr.loadImage(imageData);
@@ -333,7 +325,7 @@ describe("OCREngine", () => {
         stderr += s;
       };
 
-      const ocr = await createEngine({
+      using ocr = await createEngine({
         emscriptenModuleOptions: { printErr: writeToStderr },
       });
 
