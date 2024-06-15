@@ -64,7 +64,7 @@ describe("OCREngine", () => {
     ocr.destroy();
   });
 
-  [
+  for (const [imageData, expectedError] of [
     // Image size does not match buffer size
     [
       {
@@ -80,7 +80,7 @@ describe("OCREngine", () => {
 
     // Zero height image
     [emptyImage(100, 0), "Image width or height is zero"],
-  ].forEach(([imageData, expectedError]) => {
+  ]) {
     it("throws an error if image fails to load", () => {
       assert.throws(
         () => {
@@ -90,7 +90,7 @@ describe("OCREngine", () => {
         undefined,
       );
     });
-  });
+  }
 
   it("throws an error if OCR is attempted before image is loaded", async () => {
     const ocr = await createEngine();
@@ -246,11 +246,11 @@ describe("OCREngine", () => {
     assert.strict(meanConfidence2 >= 0.9);
   });
 
-  [
+  for (const [width, height] of [
     [100, 100],
     [200, 200],
     [1, 1],
-  ].forEach(([width, height]) => {
+  ]) {
     it("extracts bounding boxes for empty image", async () => {
       ocr.loadImage(emptyImage(width, height));
       const wordBoxes = ocr.getBoundingBoxes("word");
@@ -264,7 +264,7 @@ describe("OCREngine", () => {
       const wordBoxes = ocr.getTextBoxes("word");
       assert.strictEqual(wordBoxes.length, 1);
     });
-  });
+  }
 
   it("extracts layout flags from image", { timeout: 5_000 }, async () => {
     const imageData = await loadImage(resolve("./small-test-page.jpg"));
